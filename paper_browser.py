@@ -115,31 +115,35 @@ custom_theme = gr.themes.Soft(
 )
 
 # Create the Gradio interface
-with gr.Blocks(title="Paper Browser", theme=custom_theme) as demo:
+with gr.Blocks(title="Paper Browser", theme=custom_theme, css="""
+    .large-text textarea {
+        font-size: 20px !important;
+        line-height: 1.5 !important;
+    }
+    .large-text input {
+        font-size: 20px !important;
+        line-height: 1.5 !important;
+    }
+""") as demo:
     gr.Markdown("# 📚 Paper Browser")
-    gr.Markdown(f"Browse through {len(full_papers_df)} papers from the ACL 2025 dataset")
+    gr.Markdown(f"## Browse through the {len(full_papers_df)} papers accepted to the ACL 2025 main conference.")
     
     # Topic filter
     topic_filter = gr.Dropdown(
         label="Filter by Topic",
         choices=["All Topics"] + topic_names,
         value="All Topics",
-        interactive=True
+        interactive=True,
+        elem_classes=["large-text"]
     )
     
     # Paper counter
     paper_counter = gr.Textbox(
         label="Current Position",
         value=f"Paper 1 of {len(papers_df)}",
-        interactive=False
+        interactive=False,
+        elem_classes=["large-text"]
     )
-    
-    # Navigation controls
-    with gr.Row():
-        first_btn = gr.Button("⏮️ First", variant="secondary")
-        prev_btn = gr.Button("⬅️ Previous", variant="secondary")
-        next_btn = gr.Button("➡️ Next", variant="secondary")
-        last_btn = gr.Button("⏭️ Last", variant="secondary")
     
     # Jump to specific paper
     with gr.Row():
@@ -149,38 +153,50 @@ with gr.Blocks(title="Paper Browser", theme=custom_theme) as demo:
             minimum=1,
             maximum=len(papers_df),
             step=1,
-            precision=0
+            precision=0,
+            elem_classes=["large-text"]
         )
-        jump_btn = gr.Button("🔍 Jump", variant="primary")
+        jump_btn = gr.Button("🔍 Jump", variant="primary", elem_classes=["large-text"])
     
     # Paper information display
     title_box = gr.Textbox(
         label="Title",
         value=papers_df.iloc[0]['title'],
         lines=2,
-        interactive=False
+        interactive=False,
+        elem_classes=["large-text"]
     )
     
     authors_box = gr.Textbox(
         label="Authors",
         value=papers_df.iloc[0]['authors'],
-        lines=3,
-        interactive=False
+        lines=2,
+        interactive=False,
+        elem_classes=["large-text"]
     )
     
     topic_box = gr.Textbox(
         label="Topic",
         value=papers_df.iloc[0]['Name'] if pd.notna(papers_df.iloc[0]['Name']) else "No topic assigned",
         lines=1,
-        interactive=False
+        interactive=False,
+        elem_classes=["large-text"]
     )
     
     abstract_box = gr.Textbox(
         label="Abstract",
         value=papers_df.iloc[0]['abstract'] if pd.notna(papers_df.iloc[0]['abstract']) else "No abstract available",
-        lines=10,
-        interactive=False
+        lines=8,
+        interactive=False,
+        elem_classes=["large-text"]
     )
+
+    # Navigation controls
+    with gr.Row():
+        first_btn = gr.Button("⏮️ First", variant="secondary")
+        prev_btn = gr.Button("⬅️ Previous", variant="secondary")
+        next_btn = gr.Button("➡️ Next", variant="secondary")
+        last_btn = gr.Button("⏭️ Last", variant="secondary")
     
     # Connect topic filter to update function
     topic_filter.change(
