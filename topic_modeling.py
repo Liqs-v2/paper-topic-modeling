@@ -1,7 +1,11 @@
+import os
 from bertopic import BERTopic
 from bertopic.representation import OpenAI
 from typing import List
 import logging
+import re
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+import openai
 
 from parse_papers import load_papers, Paper
 
@@ -16,9 +20,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def create_topic_model() -> BERTopic:
+def create_topic_model(representation_model: OpenAI | None = None) -> BERTopic:
     """Create and return a BERTopic model instance."""
-    return BERTopic()
+    return BERTopic(representation_model=representation_model)
 
 def run_topic_modeling(papers: List[Paper]) -> None:
     """Run topic modeling on the processed papers."""
@@ -40,6 +44,10 @@ def remove_stopwords(text: str) -> str:
 
 def main():
     papers = load_papers()
+
+    # openai_api_key = os.getenv('OPENAI_API_KEY')
+    # client = openai.OpenAI(api_key=openai_api_key)
+    # representation_model = OpenAI(client, model="gpt-4.1-mini", chat=True)
     topic_model = create_topic_model()
 
     documents = [remove_stopwords(str(paper)) for paper in papers]
