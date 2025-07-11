@@ -30,15 +30,24 @@ def run_topic_modeling(papers: List[Paper]) -> None:
     # documents = [str(paper) for paper in papers]
     # topics, probs = topic_model.fit_transform(documents)
 
+def remove_stopwords(text: str) -> str:
+    stopwords = set(ENGLISH_STOP_WORDS)
+
+    # Tokenize by splitting on non-word characters, filter stopwords, and rejoin
+    tokens = re.findall(r'\b\w+\b', text)
+    filtered = [token for token in tokens if token.lower() not in stopwords]
+    return ' '.join(filtered)
+
 def main():
     papers = load_papers()
     topic_model = create_topic_model()
-    documents = [str(paper) for paper in papers]
-    topics, probs = topic_model.fit_transform(documents)
 
+    documents = [remove_stopwords(str(paper)) for paper in papers]
+
+    topics, probs = topic_model.fit_transform(documents)
     topic_labels = topic_model.generate_topic_labels(nr_words=3, separator=", ")
     document_info = topic_model.get_document_info(documents)
-    print(topic_labels)
+    document_info.to_csv('document_info.csv')
 
 if __name__ == "__main__":
     main()
