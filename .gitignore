@@ -1,0 +1,6 @@
+.venv
+.air
+.gradio
+
+*.log
+*.ipynb
