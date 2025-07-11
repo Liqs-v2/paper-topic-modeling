@@ -125,7 +125,7 @@ def load_parsed_papers(path_to_parsed_papers: Path) -> List[Paper]:
 
     return papers
 
-def load_raw_papers(existing_papers: List[Paper], path_to_raw_papers: Path) -> List[Paper]:
+def load_raw_papers(existing_papers: List[Paper], path_to_raw_papers: Path) -> Tuple[List[Paper], bool]:
     """Load raw papers from HTML file and merge with existing papers."""
     if not path_to_raw_papers.exists():
         logger.warning('Raw papers file not found. Cannot load additional papers.')
@@ -161,13 +161,12 @@ def load_raw_papers(existing_papers: List[Paper], path_to_raw_papers: Path) -> L
     except Exception as e:
         logger.error(f"Error loading raw papers from {path_to_raw_papers}: {e}")
 
-    return papers
+    return papers, new_papers_count > 0
 
-def fetch_papers(path_to_parsed_papers: Path, path_to_raw_papers: Path) -> List[Paper]:
+def fetch_papers(path_to_parsed_papers: Path, path_to_raw_papers: Path) -> Tuple[List[Paper], bool]:
     """Fetch papers from both parsed and raw sources."""
     papers = load_parsed_papers(path_to_parsed_papers)
-    papers = load_raw_papers(papers, path_to_raw_papers)
-    return papers
+    return load_raw_papers(papers, path_to_raw_papers)
 
 def process_papers_with_abstracts(papers: List[Paper], output_file: Path) -> None:
     """Process papers to fetch abstracts and save to CSV file."""
@@ -216,15 +215,16 @@ def load_papers():
     path_to_raw_papers = Path(DEFAULT_RAW_PAPERS_FILE)
     
     try:
-        papers = fetch_papers(path_to_parsed_papers, path_to_raw_papers)
+        papers, has_new_papers = fetch_papers(path_to_parsed_papers, path_to_raw_papers)
         
         if not papers:
             logger.warning('No papers found. Exiting.')
             return
         
         logger.info(f'Total papers loaded: {len(papers)}')
-    
-        process_papers_with_abstracts(papers, path_to_parsed_papers)
+
+        if has_new_papers:
+            process_papers_with_abstracts(papers, path_to_parsed_papers)
 
         papers_without_abstracts = [paper for paper in papers if not paper.abstract]
         logger.info(f'Papers without abstracts: {len(papers_without_abstracts)}')
